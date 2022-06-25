@@ -1,16 +1,27 @@
 ![Go Clean Template](docs/img/logo.svg)
 
 # Go Clean template
+# Go 整洁模板
 
 Clean Architecture template for Golang services
-
+golang服务的整洁架构图模板
 [![Go Report Card](https://goreportcard.com/badge/github.com/evrone/go-clean-template)](https://goreportcard.com/report/github.com/evrone/go-clean-template)
 [![License](https://img.shields.io/github/license/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/blob/master/LICENSE)
 [![Release](https://img.shields.io/github/v/release/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/releases/)
 [![codecov](https://codecov.io/gh/evrone/go-clean-template/branch/master/graph/badge.svg?token=XE3E0X3EVQ)](https://codecov.io/gh/evrone/go-clean-template)
 
 ## Overview
+## 综述
 The purpose of the template is to show:
+模板的目的为了展示：
+- 如何组织项目，以防止项目演化成难以维护的代码
+- 在哪里处理业务逻辑，以维护代码的独立、清晰和可扩展
+- 当微服务增长时，不要失去控制
+
+使用了  Robert Martin 的原则
+
+[Go 整洁模板] (https://evrone.com/go-clean-template?utm_source=github&utm_campaign=go-clean-template) 由 创建和提供支持[Evrone](https://evrone.com/?utm_source=github&utm_campaign=go-clean-template).
+
 - how to organize a project and prevent it from turning into spaghetti code
 - where to store business logic so that it remains independent, clean, and extensible
 - how not to lose control when a microservice grows
@@ -19,12 +30,31 @@ Using the principles of Robert Martin (aka Uncle Bob).
 
 [Go-clean-template](https://evrone.com/go-clean-template?utm_source=github&utm_campaign=go-clean-template) is created & supported by [Evrone](https://evrone.com/?utm_source=github&utm_campaign=go-clean-template).
 
+## 内容
+[快速开始]#快速开始
+[工程架构]#工程架构
+[依赖注入]#依赖注入
+[整洁架构]#整洁架构
 ## Content
 - [Quick start](#quick-start)
 - [Project structure](#project-structure)
 - [Dependency Injection](#dependency-injection)
 - [Clean Architecture](#clean-architecture)
 
+
+## 快速开始
+本地开发
+```sh
+# Postgres, RabbitMQ
+$ make compose-up
+# Run app with migrations
+$ make run
+```
+集成测试（可以在CI中运行）
+```sh
+# DB, app + migrations, integration tests
+$ make compose-up-integration-test
+```
 ## Quick start
 Local development:
 ```sh
@@ -39,12 +69,17 @@ Integration tests (can be run in CI):
 # DB, app + migrations, integration tests
 $ make compose-up-integration-test
 ```
-
+## 工程架构
+### `cmd/app/main.go`
+配置和日志能力初始化。主要的功能在 `internal/app/app.go` 
 ## Project structure
 ### `cmd/app/main.go`
 Configuration and logger initialization. Then the main function "continues" in
 `internal/app/app.go`.
 
+### 配置
+配置，首先读取 `config.yml`中的内容，如果环境变量里面有符合的变量，将其覆盖yml中的配置
+配置的结构在 `config.go`中
 ### `config`
 Configuration. First, `config.yml` is read, then environment variables overwrite the yaml config if they match.
 The config structure is in the `config.go`.
