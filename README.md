@@ -2,7 +2,7 @@
 
 # Go 整洁模板
 
-golang服务的整洁架构图模板
+golang服务的整洁架构模板
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/evrone/go-clean-template)](https://goreportcard.com/report/github.com/evrone/go-clean-template)
 [![License](https://img.shields.io/github/license/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/blob/master/LICENSE)
@@ -10,7 +10,6 @@ golang服务的整洁架构图模板
 [![codecov](https://codecov.io/gh/evrone/go-clean-template/branch/master/graph/badge.svg?token=XE3E0X3EVQ)](https://codecov.io/gh/evrone/go-clean-template)
 
 ## 综述
-The purpose of the template is to show:
 模板的目的为了展示：
 - 如何组织项目，以防止项目演化成难以维护的代码
 - 在哪里处理业务逻辑，以维护代码的独立、清晰和可扩展
@@ -49,11 +48,6 @@ $ make compose-up
 $ make run
 ```
 
-Integration tests (can be run in CI):
-```sh
-# DB, app + migrations, integration tests
-$ make compose-up-integration-test
-```
 
 ## 工程架构
 ### `cmd/app/main.go`
