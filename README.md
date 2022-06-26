@@ -1,16 +1,13 @@
 ![Go Clean Template](docs/img/logo.svg)
 
-# Go Clean template
 # Go 整洁模板
 
-Clean Architecture template for Golang services
-
 golang服务的整洁架构图模板
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/evrone/go-clean-template)](https://goreportcard.com/report/github.com/evrone/go-clean-template)
 [![License](https://img.shields.io/github/license/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/blob/master/LICENSE)
 [![Release](https://img.shields.io/github/v/release/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/releases/)
 [![codecov](https://codecov.io/gh/evrone/go-clean-template/branch/master/graph/badge.svg?token=XE3E0X3EVQ)](https://codecov.io/gh/evrone/go-clean-template)
-
 
 ## 综述
 The purpose of the template is to show:
@@ -23,18 +20,11 @@ The purpose of the template is to show:
 
 [Go 整洁模板](https://evrone.com/go-clean-template?utm_source=github&utm_campaign=go-clean-template) 由 创建和提供支持[Evrone](https://evrone.com/?utm_source=github&utm_campaign=go-clean-template).
 
-
 ## 内容
 - [快速开始](#快速开始)
 - [工程架构](#工程架构)
 - [依赖注入](#依赖注入)
 - [整洁架构](#整洁架构)
-## Content
-- [Quick start](#quick-start)
-- [Project structure](#project-structure)
-- [Dependency Injection](#dependency-injection)
-- [Clean Architecture](#clean-architecture)
-
 
 ## 快速开始
 本地开发
@@ -44,6 +34,7 @@ $ make compose-up
 # Run app with migrations
 $ make run
 ```
+
 集成测试（可以在CI中运行）
 ```sh
 # DB, app + migrations, integration tests
@@ -63,12 +54,12 @@ Integration tests (can be run in CI):
 # DB, app + migrations, integration tests
 $ make compose-up-integration-test
 ```
+
 ## 工程架构
 ### `cmd/app/main.go`
 配置和日志能力初始化。主要的功能在 `internal/app/app.go` 
 
-
-### `conf`
+### `config`
 配置，首先读取 `config.yml`中的内容，如果环境变量里面有符合的变量，将其覆盖yml中的配置
 配置的结构在 `config.go`中
 `env-required:true` 标签强制你指定值（在yml文件或者环境变量中）
@@ -78,17 +69,14 @@ cleanenv没有很多的starts数，但是它简单并能满足我们的需求
 从yaml配置文件中读取配置违背了12种原则。但是比起从环境变量种读取所有的配置，它确实是更加方便的。
 这种模式假设配置默认值在yaml文件种，对安全敏感的配置在环境变量种
 
-
 ### `docs`
 Swagger 文档。由  [swag](https://github.com/swaggo/swag) 库自动生成
 你不需要自己修改任何内容
 
-
-### 集成测试
+### `integration-test`
 集成测试
 它会在应用容器旁启动独立的容器
 使用[go-hit](https://github.com/Eun/go-hit) 会很方便的测试Rest API
-
 
 ## `internal/app`
 这里只有通常只有一个 _Run_ 函数在 `app.go` 文件种。它是 _main_ 函数的延续
@@ -108,8 +96,6 @@ Swagger 文档。由  [swag](https://github.com/swaggo/swag) 库自动生成
 $ go run -tags migrate ./cmd/app
 ```
 
-
-
 ### `internal/controller`
 服务器处理层（MVC 控制层），这个模块展示两个服务
 - RPC 
@@ -119,7 +105,6 @@ $ go run -tags migrate ./cmd/app
 - handler 按照应用领域进行分组（又共同的基础）
 - 对于每一个分组，创建自己的路由结构体和请求path路径
 - 业务逻辑的结构被注入到路由器结构中，它将被处理程序调用
-
 
 #### `internal/controller/http`
 简单的 REST 版本控制
@@ -133,11 +118,9 @@ v2.NewRouter(handler, t)
 除了 Gin，您可以使用任何其他 http 框架，甚至是标准的 `net/http` 库。
 在 `v1/router.go` 及以上的处理程序方法中，可以使用[swag](https://github.com/swaggo/swag) swagger 通过注释生成swagger文档.
 
-
 ### `internal/entity`
 业务逻辑实体（模型）可用于任何层. 
 这里包括一些方法，例如：参数检验.
-.
 
 ### `internal/usecase`
 业务逻辑.
@@ -147,17 +130,13 @@ v2.NewRouter(handler, t)
 Repositories、webapi、rpc等业务逻辑结构被注入到业务逻辑结构中
 (阅读 [依赖注入](#dependency-injection)).
 
-
-#### `internal/usecase/repp`
+#### `internal/usecase/repo`
 是持久化存储的业务逻辑逻辑抽象,如数据库.
-
-
 
 #### `internal/usecase/webapi`
 是webapi业务逻辑使用的抽象.
 例如，它可能是业务逻辑通过 REST API 访问的另一个微服务。
 包名称根据业务的实际用途进行命名
-
 
 ### `pkg/rabbitmq`
 RabbitMQ RPC 模式：
@@ -200,10 +179,10 @@ func (uc *UseCase) Do()  {
 }
 ```
 
-
 ## 整洁架构
 ## 关键的观点
 在编写完大部分代码后，程序员会意识到应用程序的最佳架构
+
 > 一个好的架构允许尽可能晚地做出决策
 
 ### 主要原则
@@ -212,8 +191,10 @@ func (uc *UseCase) Do()  {
 因此，业务逻辑和实体可以保持独立于系统的其他部分。
 因此，应用程序分为 2 层，内部和外部：
 1. **业务逻辑**（Go标准库）
-2.  **工具**（数据库、服务器、消息代理、任何其他包和框架）。
+2.  **工具**（数据库、服务器、消息代理、任何其他包和框架）
+  
 ![Clean Architecture](docs/img/layers-1.png)
+
 **带有业务逻辑的内层**应该是干净的，它应该有如下特征：
 - 没有从外层导入的包
 - 仅使用标准库的功能
