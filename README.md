@@ -239,7 +239,7 @@ HTTP 和数据库都在外层，这意味着他们彼此无法感知
 
 ### 整洁的架构相关术语
 - **ENTITY**是业务逻辑运行的结构。
-它们位于“internal/entity”文件夹中。
+它们位于`internal/entity`文件夹中。
 在 MVC 术语中，实体是models
 
 - **Use Cases** 业务逻辑位于 `internal/usecase` 中
