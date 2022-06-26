@@ -174,8 +174,16 @@ Server routers are written in the same style:
 - The structure of the business logic is injected into the router structure, which will be called by the handlers
 
 #### `internal/controller/http`
-
-
+简单的 REST 版本控制
+对于v2版本，我们需要添加`http/v2`文件夹，内容相同
+在文件 `internal/app` 中添加以下行：
+```go
+handler := gin.New()
+v1.NewRouter(handler, t)
+v2.NewRouter(handler, t)
+```
+除了 Gin，您可以使用任何其他 http 框架，甚至是标准的 `net/http` 库。
+在 `v1/router.go` 及以上的处理程序方法中，可以使用[swag](https://github.com/swaggo/swag) swagger 通过注释生成swagger文档.
 #### `internal/controller/http`
 Simple REST versioning.
 For v2, we will need to add the `http/v2` folder with the same content.
@@ -187,13 +195,22 @@ v2.NewRouter(handler, t)
 ```
 
 Instead of Gin, you can use any other http framework or even the standard `net/http` library.
-
 In `v1/router.go` and above the handler methods, there are comments for generating swagger documentation using [swag](https://github.com/swaggo/swag).
 
+### `internal/entity`
+业务逻辑实体（模型）可用于任何层. 
+这里包括一些方法，例如：参数检验.
 ### `internal/entity`
 Entities of business logic (models) can be used in any layer.
 There can also be methods, for example, for validation.
 
+### `internal/usecase`
+业务逻辑.
+- 方法按应用领域分组（在共同的基础上）
+- 每个组都有自己的结构
+- 一个文件对应一个结构
+Repositories、webapi、rpc等业务逻辑结构被注入到业务逻辑结构中
+(阅读 [依赖注入](#dependency-injection)).
 ### `internal/usecase`
 Business logic.
 - Methods are grouped by area of application (on a common basis)
@@ -203,14 +220,62 @@ Business logic.
 Repositories, webapi, rpc, and other business logic structures are injected into business logic structures
 (see [Dependency Injection](#dependency-injection)).
 
+#### `internal/usecase/repp`
+是持久化存储的业务逻辑逻辑抽象,如数据库.
+
 #### `internal/usecase/repo`
 A repository is an abstract storage (database) that business logic works with.
 
+#### `internal/usecase/webapi`
+是webapi业务逻辑使用的抽象.
+例如，它可能是业务逻辑通过 REST API 访问的另一个微服务。
+包名称根据业务的实际用途进行命名
 #### `internal/usecase/webapi`
 It is an abstract web API that business logic works with.
 For example, it could be another microservice that business logic accesses via the REST API.
 The package name changes depending on the purpose.
 
+### `pkg/rabbitmq`
+RabbitMQ RPC 模式：
+- RabbitMQ 中没有路由
+- 使用Exchange fanout出并绑定 1 个独占队列，这么配置是最高效的
+- 在连接丢失时重新连接
+
+## 依赖注入
+为了去除业务逻辑对外部包的依赖，使用了依赖注入.
+例如，通过New构造函数，我们将依赖注入到业务逻辑的结构中.
+这使得业务逻辑独立（且可移植）
+我们可以覆盖接口的实现，而无需更改 `usecase` 包.
+
+它还将允许我们自动生成相关mock（例如使用 [mockery](https://github.com/vektra/mockery)），以便进行单元测试.
+> 我们不依赖于特定的实现，以便始终能够将一个组件更改为另一个组件
+> 如果新组件实现了接口，则业务逻辑无需更改。
+```go
+package usecase
+
+import (
+    // Nothing!
+)
+
+type Repository interface {
+    Get()
+}
+
+type UseCase struct {
+    repo Repository
+}
+
+func New(r Repository) *UseCase{
+    return &UseCase{
+        repo: r,
+    }
+}
+
+func (uc *UseCase) Do()  {
+    uc.repo.Get()
+}
+```
+2.
 ### `pkg/rabbitmq`
 RabbitMQ RPC pattern:
 - There is no routing inside RabbitMQ
@@ -254,6 +319,27 @@ It will also allow us to do auto-generation of mocks (for example with [mockery]
 
 > We are not tied to specific implementations in order to always be able to change one component to another.
 > If the new component implements the interface, nothing needs to be changed in the business logic.
+
+
+## 整洁的架构
+## 关键的观点
+在编写完大部分代码后，程序员会意识到应用程序的最佳架构
+> 一个好的架构允许尽可能晚地做出决策
+
+### 主要原则
+依赖倒置的原理（与 SOLID 相同）
+依赖的方向是从外层到内层。
+因此，业务逻辑和实体可以保持独立于系统的其他部分。
+因此，应用程序分为 2 层，内部和外部：
+1. **业务逻辑**（Go标准库）
+2.  **工具**（数据库、服务器、消息代理、任何其他包和框架）。
+![Clean Architecture](docs/img/layers-1.png)
+**带有业务逻辑的内层**应该是干净的，它应该有如下特征：
+- 没有从外层导入的包
+- 仅使用标准库的功能
+- 通过接口调用外层(!)
+
+业务逻辑对 数据存储 或特定的 Web API 是无感知的.
 
 ## Clean Architecture
 ### Key idea
