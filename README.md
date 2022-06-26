@@ -294,8 +294,6 @@ _______________________________
 - [https://github.com/bxcodec/go-clean-arch](https://github.com/bxcodec/go-clean-arch)
 - [https://github.com/zhashkevych/courses-backend](https://github.com/zhashkevych/courses-backend)
 
-## 可能有用用的链接
+## 可能有用的链接
 - [The Clean Architecture article](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Twelve factors](https://12factor.net/ru/)
-
-
