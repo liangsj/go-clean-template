@@ -118,7 +118,19 @@ It is convenient to test the Rest API using [go-hit](https://github.com/Eun/go-h
 这里只有通常只有一个 _Run_ 函数在 `app.go` 文件种。它是 _main_ 函数的延续
 
 主要的对象在这里生成
-依赖注入通过 "New ..." 构造 (阅读依赖注入)
+依赖注入通过 "New ..." 构造 (阅读依赖注入)，这个技术允许使用[依赖注入](#依赖注入)的原则进行分层，使得业务逻辑独立于其他层。
+
+接下来，我们启动服务器并阻塞等待_select_ 中的信号正常完成。
+
+如果 `app.go`的规模增长了，你可以将它拆分为多个文件.
+
+对于大量的依赖，可以使用[wire](https://github.com/google/wire)
+
+`migrate.go` 文件用于是数据库自动构建
+它显示的包扣了 _migrate_ 标签
+```sh
+$ go run -tags migrate ./cmd/app
+```
 
 ### `internal/app`
 There is always one _Run_ function in the `app.go` file, which "continues" the _main_ function.
@@ -142,6 +154,16 @@ $ go run -tags migrate ./cmd/app
 ```
 
 ### `internal/controller`
+服务器处理层（MVC 控制层），这个模块展示两个服务
+- RPC 
+- REST http 
+
+服务的路由用同样的风格进行编写
+- handler 按照应用领域进行分组（又共同的基础）
+- 对于每一个分组，创建自己的路由结构体和请求path路径
+- 业务逻辑的结构被注入到路由器结构中，它将被处理程序调用
+
+### `internal/controller`
 Server handler layer (MVC controllers). The template shows 2 servers:
 - RPC (RabbitMQ as transport)
 - REST http (Gin framework)
@@ -150,6 +172,9 @@ Server routers are written in the same style:
 - Handlers are grouped by area of application (by a common basis)
 - For each group, its own router structure is created, the methods of which process paths
 - The structure of the business logic is injected into the router structure, which will be called by the handlers
+
+#### `internal/controller/http`
+
 
 #### `internal/controller/http`
 Simple REST versioning.
