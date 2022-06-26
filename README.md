@@ -340,7 +340,38 @@ It will also allow us to do auto-generation of mocks (for example with [mockery]
 - 通过接口调用外层(!)
 
 业务逻辑对 数据存储 或特定的 Web API 是无感知的.
+业务逻辑用抽象接口处理 数据库或 web API。
+**外层**有其他限制：
+- 该层的所有组件都不知道彼此的存在。如何进行组件间的调用呢? 只能通过业务逻辑的内层间接调用
+- 所有对内层的调用都是通过接口进行的(!)
+- 为了便捷地进行业务数据传输，数据格式得进行标标准化（`internal/entity`）。
 
+例如，您需要从 HTTP（控制器）访问数据库
+HTTP 和数据库都在外层，这意味着他们彼此无法感知
+它们之间的通信是通过`usecase`（业务逻辑）进行的：
+```
+    HTTP > usecase
+           usecase > repository (repo)
+           usecase < repository (repo)
+    HTTP < usecase
+```
+符号 > 和 < 通过接口显示层边界的交集
+如图所示
+![Example](docs/img/example-http-db.png)
+
+更加复杂的业务逻辑
+```
+    HTTP > usecase
+           usecase > repository
+           usecase < repository
+           usecase > webapi
+           usecase < webapi
+           usecase > RPC
+           usecase < RPC
+           usecase > repository
+           usecase < repository
+    HTTP < usecase
+```
 ## Clean Architecture
 ### Key idea
 Programmers realize the optimal architecture for an application after most of the code has been written.
@@ -400,6 +431,50 @@ Or more complex business logic:
     HTTP < usecase
 ```
 
+### 层
+![Example](docs/img/layers-2.png)
+
+### 整洁的架构相关术语
+- **ENTITY**是业务逻辑运行的结构。
+它们位于“internal/entity”文件夹中。
+在 MVC 术语中，实体是models
+
+- **Use Cases** 业务逻辑位于 `internal/usecase` 中
+与业务逻辑直接交互的层通常称为_infrastructure_ 层
+这些可以是存储库 `internal/usecase/repo`、外部 webapi `internal/usecase/webapi`、任何包和其他微服务。
+在模板中，_infrastructure_ 包位于 `internal/usecase` 中
+
+您可以根据需要决定你要调用的入口点，包括：
+- controller 
+- delivery
+- transport
+- gateways
+- entrypoints
+- primary
+- input
+
+
+### 附加层
+
+[整洁架构](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) 的经典版本是为构建大型单体应用程序而设计的，有 4 层
+原版中，外层多分为两层，也使用依赖倒置原理
+彼此（向内）通过接口进行通信
+在复杂逻辑的情况下，内层也分为两层（通过接口进行分层）
+_______________________________
+复杂的工具可以通过分层设计
+只有在你有需要的时候菜进行分层
+
+### 替代品
+除了整洁的架构, _Onion architecture_ 和 _Hexagonal_ (接口适配层) 一样能达到目的，他们都符合依赖倒置的原则
+这三种模式都非常接近，不同的知识术语不同
+
+## 相似的工程
+- [https://github.com/bxcodec/go-clean-arch](https://github.com/bxcodec/go-clean-arch)
+- [https://github.com/zhashkevych/courses-backend](https://github.com/zhashkevych/courses-backend)
+
+## 可能有用用的链接
+- [The Clean Architecture article](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Twelve factors](https://12factor.net/ru/)
 ### Layers
 ![Example](docs/img/layers-2.png)
 
